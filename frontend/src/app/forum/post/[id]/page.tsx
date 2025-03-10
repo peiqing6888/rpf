@@ -1,23 +1,19 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { CRTEffect } from '@/components/CRTEffect';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { PostDetail } from '@/components/PostDetail';
 import { ReplyList } from '@/components/ReplyList';
 import { Post, Reply, postsApi } from '@/lib/api';
 import { useAuthStore } from '@/store/auth';
 
-interface Params {
-  id: string;
-  [key: string]: string | string[];
-}
-
 export default function PostPage() {
-  const params = useParams() as Params;
-  const postId = params.id;
+  const params = useParams();
+  const postId = typeof params?.id === 'string' ? params.id : null;
   const { user } = useAuthStore();
-
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,18 +22,22 @@ export default function PostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
+    if (!postId) {
+      setError('Invalid post ID');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const [postData, repliesData] = await Promise.all([
-        postsApi.getOne(postId),
-        postsApi.getReplies(postId),
-      ]);
+      setError(null);
+      const postData = await postsApi.getOne(postId);
+      const repliesData = await postsApi.getReplies(postId);
       setPost(postData);
       setReplies(repliesData);
-      setError(null);
     } catch (err) {
-      setError('Failed to load post');
       console.error('Error fetching post:', err);
+      setError('Failed to load post');
     } finally {
       setIsLoading(false);
     }
@@ -52,40 +52,30 @@ export default function PostPage() {
 
     try {
       setIsSubmitting(true);
-      await postsApi.createReply(postId, { content: replyContent });
+      await postsApi.createReply(post!.id, {
+        content: replyContent.trim(),
+      });
       setReplyContent('');
       fetchData(); // 重新加載帖子和回覆
     } catch (err) {
       console.error('Error creating reply:', err);
+      setError('Failed to create reply');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (isLoading) {
-    return (
-      <CRTEffect>
-        <div className="min-h-screen bg-secondary flex items-center justify-center">
-          <div className="font-pixel text-primary text-xl">Loading...</div>
-        </div>
-      </CRTEffect>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   if (error || !post) {
     return (
-      <CRTEffect>
-        <div className="min-h-screen bg-secondary flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-4xl font-pixel text-primary mb-4">
-              404
-            </h1>
-            <p className="text-gray-400">
-              {error || 'Post not found'}
-            </p>
-          </div>
-        </div>
-      </CRTEffect>
+      <ErrorMessage
+        message={error || 'Post not found'}
+        fullScreen
+        retry={fetchData}
+      />
     );
   }
 
@@ -93,49 +83,53 @@ export default function PostPage() {
     <CRTEffect>
       <main className="min-h-screen bg-secondary">
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <PostDetail post={post} onReactionUpdate={fetchData} />
-          
+          <PostDetail
+            post={post}
+            onReactionUpdate={fetchData}
+          />
+
+          {/* 回覆區域 */}
           <div className="mt-8">
-            <h2 className="text-2xl font-pixel text-primary mb-4">
-              Replies ({replies.length})
+            <h2 className="font-pixel text-2xl text-primary mb-6">
+              Replies
             </h2>
-            <ReplyList replies={replies} onReactionUpdate={fetchData} />
+
+            {user && !post.isLocked && (
+              <div className="mb-8">
+                <div className="ddos-input">
+                  <textarea
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    className="w-full bg-transparent border-none outline-none resize-none font-mono text-primary min-h-[100px] p-4"
+                    placeholder="Write your reply..."
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={handleSubmitReply}
+                    disabled={isSubmitting || !replyContent.trim()}
+                    className="arcade-button"
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Reply'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {post.isLocked && (
+              <div className="text-center py-4 mb-8 border-2 border-primary rounded-lg">
+                <p className="text-primary">
+                  🔒 This post is locked. New replies are not allowed.
+                </p>
+              </div>
+            )}
+
+            <ReplyList
+              replies={replies}
+              onReactionUpdate={fetchData}
+            />
           </div>
-
-          {user && !post.isLocked && (
-            <div className="mt-8">
-              <div className="ddos-input">
-                <textarea
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  className="w-full bg-transparent border-none outline-none resize-none font-mono text-primary min-h-[120px] p-4"
-                  placeholder="Write your reply..."
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="flex justify-end mt-4">
-                <button
-                  className="arcade-button"
-                  onClick={handleSubmitReply}
-                  disabled={isSubmitting || !replyContent.trim()}
-                >
-                  {isSubmitting ? 'Posting...' : 'Post Reply'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {post.isLocked && (
-            <div className="mt-8 text-center text-gray-400 border-2 border-primary rounded-lg p-4">
-              This post is locked. New replies are not allowed.
-            </div>
-          )}
-
-          {!user && (
-            <div className="mt-8 text-center text-gray-400 border-2 border-primary rounded-lg p-4">
-              Please sign in to reply to this post.
-            </div>
-          )}
         </div>
       </main>
     </CRTEffect>
