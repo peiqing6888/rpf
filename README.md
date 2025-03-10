@@ -5,6 +5,7 @@
 ## 技術棧
 
 ### 前端
+
 - React 18 + TypeScript
 - Next.js 14
 - Tailwind CSS
@@ -12,6 +13,7 @@
 - Supabase (認證和存儲)
 
 ### 後端
+
 - NestJS
 - TypeORM
 - PostgreSQL (Supabase)
@@ -39,24 +41,27 @@
 ## 開發進度
 
 ### 已完成
-- [x] 項目基礎架構搭建
-- [x] 前端 UI 框架集成
-- [x] 像素風格設計系統
-- [x] 頭像生成器組件
-- [x] CRT 顯示效果
-- [x] 用戶認證系統
-- [x] Supabase 集成
-- [x] 論壇板塊功能
-- [x] 發帖和回帖界面
-- [x] 表情反應 UI
+
+- [X] 項目基礎架構搭建
+- [X] 前端 UI 框架集成
+- [X] 像素風格設計系統
+- [X] 頭像生成器組件
+- [X] CRT 顯示效果
+- [X] 用戶認證系統
+- [X] Supabase 集成
+- [X] 論壇板塊功能
+- [X] 發帖和回帖界面
+- [X] 表情反應 UI
 
 ### 進行中
+
 - [ ] 實時通知系統
 - [ ] 用戶個人資料完善
 - [ ] 發帖和回帖功能實現
 - [ ] 表情反應後端實現
 
 ### 計劃中
+
 - [ ] 主題定制
 - [ ] 多語言支持
 - [ ] 社區管理工具
@@ -74,12 +79,14 @@
 ### 安裝步驟
 
 1. 克隆倉庫
+
 ```bash
 git clone https://github.com/yourusername/pixel-forum.git
 cd pixel-forum
 ```
 
 2. 安裝依賴
+
 ```bash
 # 前端依賴
 cd frontend
@@ -91,6 +98,7 @@ bun install
 ```
 
 3. 環境配置
+
 ```bash
 # 前端配置
 cd frontend
@@ -104,6 +112,7 @@ cp .env.example .env
 ```
 
 4. 啟動服務
+
 ```bash
 # 啟動後端（在 backend 目錄下）
 bun run dev

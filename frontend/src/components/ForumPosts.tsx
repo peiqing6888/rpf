@@ -4,30 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
-
-interface Author {
-  id: string;
-  username: string;
-  avatar: string;
-  nameplate: string;
-}
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  author: Author;
-  createdAt: string;
-  repliesCount: number;
-  likesCount: number;
-  isPinned: boolean;
-}
+import { Post } from '@/lib/api';
 
 interface ForumPostsProps {
   posts: Post[];
+  onUpdate?: () => void;
 }
 
-export const ForumPosts: React.FC<ForumPostsProps> = ({ posts }) => {
+export const ForumPosts: React.FC<ForumPostsProps> = ({ posts, onUpdate }) => {
   return (
     <div className="space-y-6">
       {/* 置頂帖子 */}
@@ -60,11 +44,11 @@ export const ForumPosts: React.FC<ForumPostsProps> = ({ posts }) => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
                     <span className="mr-1">💬</span>
-                    {post.repliesCount} replies
+                    {post.replyCount} replies
                   </div>
                   <div className="flex items-center">
                     <span className="mr-1">❤️</span>
-                    {post.likesCount} likes
+                    {Object.values(post.reactions).reduce((a, b) => a + b, 0)} reactions
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -108,11 +92,11 @@ export const ForumPosts: React.FC<ForumPostsProps> = ({ posts }) => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
                     <span className="mr-1">💬</span>
-                    {post.repliesCount} replies
+                    {post.replyCount} replies
                   </div>
                   <div className="flex items-center">
                     <span className="mr-1">❤️</span>
-                    {post.likesCount} likes
+                    {Object.values(post.reactions).reduce((a, b) => a + b, 0)} reactions
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">

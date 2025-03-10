@@ -1,10 +1,13 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { CRTEffect } from '@/components/CRTEffect';
 import { ForumPosts } from '@/components/ForumPosts';
-import { MOCK_BOARDS, MOCK_POSTS, Board } from '@/data/mock';
+import { CreatePostForm } from '@/components/CreatePostForm';
+import { Board, Post, boardsApi, postsApi } from '@/lib/api';
+import { useAuthStore } from '@/store/auth';
 
 interface Params {
   id: string;
@@ -14,11 +17,47 @@ interface Params {
 export default function BoardPage() {
   const params = useParams() as Params;
   const boardId = params.id;
+  const { user } = useAuthStore();
 
-  // 根據 boardId 獲取對應的板塊數據
-  const board = MOCK_BOARDS.find((b: Board) => b.id === boardId);
+  const [board, setBoard] = useState<Board | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  if (!board) {
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [boardData, postsData] = await Promise.all([
+        boardsApi.getOne(boardId),
+        postsApi.getAll(boardId),
+      ]);
+      setBoard(boardData);
+      setPosts(postsData);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load board');
+      console.error('Error fetching board:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [boardId]);
+
+  if (isLoading) {
+    return (
+      <CRTEffect>
+        <div className="min-h-screen bg-secondary flex items-center justify-center">
+          <div className="font-pixel text-primary text-xl">Loading...</div>
+        </div>
+      </CRTEffect>
+    );
+  }
+
+  if (error || !board) {
     return (
       <CRTEffect>
         <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -27,7 +66,7 @@ export default function BoardPage() {
               404
             </h1>
             <p className="text-gray-400">
-              Board not found
+              {error || 'Board not found'}
             </p>
           </div>
         </div>
@@ -62,20 +101,50 @@ export default function BoardPage() {
               <div className="flex space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
                   <span className="mr-1">📝</span>
-                  {board.postsCount} posts
+                  {board.postCount} posts
                 </div>
                 <div className="flex items-center">
                   <span className="mr-1">👥</span>
                   {board.activeUsers} active
                 </div>
               </div>
-              <button className="arcade-button">
-                New Post
-              </button>
+              {user && !board.settings.requireApproval && (
+                <button
+                  className="arcade-button"
+                  onClick={() => setIsCreating(true)}
+                >
+                  New Post
+                </button>
+              )}
             </div>
           </header>
 
-          <ForumPosts posts={MOCK_POSTS} />
+          {isCreating ? (
+            <div className="mb-8">
+              <h2 className="text-2xl font-pixel text-primary mb-4">
+                Create New Post
+              </h2>
+              <CreatePostForm
+                boardId={boardId}
+                onCancel={() => setIsCreating(false)}
+              />
+            </div>
+          ) : (
+            <ForumPosts posts={posts} onUpdate={fetchData} />
+          )}
+
+          {board.settings.requireApproval && (
+            <div className="text-center text-gray-400 border-2 border-primary rounded-lg p-4 mt-8">
+              This board requires moderator approval for new posts.
+              Please contact a moderator to submit a post.
+            </div>
+          )}
+
+          {!user && (
+            <div className="text-center text-gray-400 border-2 border-primary rounded-lg p-4 mt-8">
+              Please sign in to create a new post.
+            </div>
+          )}
         </div>
       </main>
     </CRTEffect>

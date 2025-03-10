@@ -3,15 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-
-interface Board {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  postsCount: number;
-  activeUsers: number;
-}
+import { Board } from '@/lib/api';
 
 interface ForumBoardsProps {
   boards: Board[];
@@ -45,12 +37,18 @@ export const ForumBoards: React.FC<ForumBoardsProps> = ({ boards }) => {
               <div className="flex items-center space-x-4 text-xs text-gray-500">
                 <div className="flex items-center">
                   <span className="mr-1">📝</span>
-                  {board.postsCount} posts
+                  {board.postCount} posts
                 </div>
                 <div className="flex items-center">
                   <span className="mr-1">👥</span>
                   {board.activeUsers} active
                 </div>
+                {board.settings.requireApproval && (
+                  <div className="flex items-center text-primary">
+                    <span className="mr-1">🔒</span>
+                    Moderated
+                  </div>
+                )}
               </div>
             </div>
           </div>

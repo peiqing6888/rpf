@@ -1,24 +1,61 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
-import { Reply } from '@/data/mock';
+import { Reply } from '@/lib/api';
+import { useAuthStore } from '@/store/auth';
+import { postsApi } from '@/lib/api';
 
 interface ReplyListProps {
   replies: Reply[];
+  onReactionUpdate?: () => void;
 }
 
 interface ReplyItemProps {
   reply: Reply;
   children?: React.ReactNode;
+  onReactionUpdate?: () => void;
 }
 
-const ReplyItem: React.FC<ReplyItemProps> = ({ reply, children }) => {
-  const handleReaction = (type: string) => {
-    // TODO: Implement reaction handling
-    console.log('React with:', type);
+const ReplyItem: React.FC<ReplyItemProps> = ({ reply, children, onReactionUpdate }) => {
+  const { user } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyContent, setReplyContent] = useState('');
+
+  const handleReaction = async (type: string) => {
+    if (!user) return;
+
+    try {
+      setIsLoading(true);
+      await postsApi.toggleReaction(reply.id, type);
+      onReactionUpdate?.();
+    } catch (error) {
+      console.error('Failed to toggle reaction:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReply = async () => {
+    if (!user || !replyContent.trim()) return;
+
+    try {
+      setIsLoading(true);
+      await postsApi.createReply(reply.postId, {
+        content: replyContent,
+        parentId: reply.id,
+      });
+      setReplyContent('');
+      setIsReplying(false);
+      onReactionUpdate?.();
+    } catch (error) {
+      console.error('Failed to create reply:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,26 +97,56 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, children }) => {
 
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
-              {Object.entries(reply.reactions).map(([type, reaction]) => (
+              {Object.entries(reply.reactions).map(([type, count]) => (
                 <button
                   key={type}
                   onClick={() => handleReaction(type)}
+                  disabled={isLoading || !user}
                   className={`flex items-center gap-1 px-2 py-0.5 rounded text-sm transition-colors ${
-                    reaction.reacted
-                      ? 'bg-primary/20 text-primary'
-                      : 'hover:bg-primary/10 text-gray-400 hover:text-primary'
+                    user
+                      ? 'hover:bg-primary/10 text-gray-400 hover:text-primary'
+                      : 'opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <span>{type}</span>
-                  <span>{reaction.count}</span>
+                  <span>{count}</span>
                 </button>
               ))}
             </div>
 
-            <button className="text-sm text-gray-400 hover:text-primary transition-colors">
-              Reply
-            </button>
+            {user && (
+              <button
+                className="text-sm text-gray-400 hover:text-primary transition-colors"
+                onClick={() => setIsReplying(!isReplying)}
+                disabled={isLoading}
+              >
+                {isReplying ? 'Cancel' : 'Reply'}
+              </button>
+            )}
           </div>
+
+          {isReplying && (
+            <div className="mt-4">
+              <div className="ddos-input">
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none resize-none font-mono text-primary min-h-[80px] p-4"
+                  placeholder="Write your reply..."
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="flex justify-end mt-2">
+                <button
+                  className="arcade-button text-xs px-4 py-2"
+                  onClick={handleReply}
+                  disabled={isLoading || !replyContent.trim()}
+                >
+                  {isLoading ? 'Sending...' : 'Send Reply'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -92,7 +159,7 @@ const ReplyItem: React.FC<ReplyItemProps> = ({ reply, children }) => {
   );
 };
 
-export const ReplyList: React.FC<ReplyListProps> = ({ replies }) => {
+export const ReplyList: React.FC<ReplyListProps> = ({ replies, onReactionUpdate }) => {
   // 組織回覆樹
   const replyMap = new Map<string, Reply[]>();
   const topLevelReplies: Reply[] = [];
@@ -111,7 +178,7 @@ export const ReplyList: React.FC<ReplyListProps> = ({ replies }) => {
   const renderReplyTree = (reply: Reply) => {
     const children = replyMap.get(reply.id);
     return (
-      <ReplyItem key={reply.id} reply={reply}>
+      <ReplyItem key={reply.id} reply={reply} onReactionUpdate={onReactionUpdate}>
         {children?.map(child => renderReplyTree(child))}
       </ReplyItem>
     );

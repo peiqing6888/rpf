@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import compression from 'compression';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,6 +38,9 @@ async function bootstrap() {
       },
     }),
   );
+
+  // 全局異常過濾器
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // 全局前綴
   app.setGlobalPrefix('api');
