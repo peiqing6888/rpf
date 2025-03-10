@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #FF770F;
+  --secondary: #000026;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+}
+
+body {
+  background-color: var(--secondary);
+  color: var(--text-primary);
+  font-family: var(--font-mono), monospace;
+  margin: 0;
+  padding: 0;
+}
+
+.font-pixel {
+  font-family: var(--font-pixel), cursive;
+}
+
+/* 街機按鈕樣式 */
+.arcade-button {
+  background: var(--primary);
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--secondary),
+              inset 0 0 10px rgba(0,0,0,0.5);
+  color: white;
+  cursor: pointer;
+  font-family: var(--font-pixel), cursive;
+  padding: 20px;
+  position: relative;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.arcade-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--primary);
+}
+
+/* DDOS風格輸入框 */
+.ddos-input {
+  background: var(--secondary);
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  font-family: var(--font-mono), monospace;
+  padding: 10px;
+  position: relative;
+  width: 100%;
+}
+
+.ddos-input::before {
+  content: ">";
+  color: var(--primary);
+  position: absolute;
+  left: 5px;
+}
+
+/* 像素表情反應 */
+.pixel-reaction {
+  image-rendering: pixelated;
+  transform: scale(2);
+  transition: transform 0.2s;
+}
+
+.pixel-reaction:hover {
+  transform: scale(2.5);
+}
+
+/* 自定義滾動條 */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 2px solid var(--secondary);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff8f3f;
+} 
