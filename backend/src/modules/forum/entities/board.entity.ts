@@ -6,54 +6,53 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Post } from './post.entity';
 
 @Entity('boards')
 export class Board {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column('text')
-  description: string;
+  description!: string;
 
   @Column()
-  icon: string;
+  icon!: string;
 
   @Column({ type: 'jsonb', default: {} })
-  settings: {
+  settings!: {
     allowAnonymous?: boolean;
     requireApproval?: boolean;
     allowReplies?: boolean;
     allowReactions?: boolean;
   };
 
-  @OneToMany(() => Post, (post) => post.board)
-  posts: Post[];
+  @OneToMany('Post', 'board')
+  posts!: any[];
 
   @Column({ default: 0 })
-  postCount: number;
+  postCount!: number;
 
   @Column({ default: 0 })
-  activeUsers: number;
+  activeUsers!: number;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ default: false })
-  isPrivate: boolean;
+  isPrivate!: boolean;
 
   @Column({ type: 'text', array: true, default: [] })
-  moderators: string[];
+  moderators!: string[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Column({ nullable: true })
-  lastPostAt: Date;
+  lastPostAt!: Date;
 } 

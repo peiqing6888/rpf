@@ -13,19 +13,22 @@ import { AuthModule } from './modules/auth/auth.module';
       isGlobal: true,
     }),
     
-    // PostgreSQL配置
+    // PostgreSQL配置 (Supabase)
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE'),
+        url: configService.get('DIRECT_URL'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') !== 'production',
-        ssl: configService.get('NODE_ENV') === 'production',
+        ssl: {
+          rejectUnauthorized: false
+        },
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 2000,
+        }
       }),
       inject: [ConfigService],
     }),
@@ -36,7 +39,7 @@ import { AuthModule } from './modules/auth/auth.module';
       useFactory: (configService: ConfigService) => ({
         config: {
           url: configService.get('REDIS_URL'),
-          tls: configService.get('NODE_ENV') === 'production',
+          tls: configService.get('NODE_ENV') === 'production' ? {} : false,
         },
       }),
       inject: [ConfigService],

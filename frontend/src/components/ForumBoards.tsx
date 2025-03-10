@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -17,46 +19,39 @@ interface ForumBoardsProps {
 
 export const ForumBoards: React.FC<ForumBoardsProps> = ({ boards }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {boards.map((board) => (
         <Link
           key={board.id}
-          href={`/board/${board.id}`}
-          className="block group"
+          href={`/forum/board/${board.id}`}
+          className="block bg-primary/10 hover:bg-primary/20 border-2 border-primary rounded-lg p-6 transition-colors"
         >
-          <div className="relative bg-secondary p-6 rounded-lg border-4 border-primary transform transition-all duration-200 hover:scale-105 hover:shadow-glow">
-            <div className="absolute -top-4 -left-4 w-12 h-12 bg-primary rounded-full flex items-center justify-center border-4 border-white overflow-hidden">
+          <div className="flex items-start space-x-4">
+            <div className="relative w-12 h-12 flex-shrink-0">
               <Image
                 src={board.icon}
                 alt={board.name}
-                width={32}
-                height={32}
-                className="pixelated"
+                fill
+                className="object-contain pixelated"
               />
             </div>
-            
-            <div className="ml-8 mt-2">
+            <div className="flex-grow">
               <h3 className="text-xl font-pixel text-primary mb-2">
                 {board.name}
               </h3>
-              <p className="text-sm text-gray-300 mb-4">
+              <p className="text-gray-400 text-sm mb-4">
                 {board.description}
               </p>
-              
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>
+              <div className="flex items-center space-x-4 text-xs text-gray-500">
+                <div className="flex items-center">
+                  <span className="mr-1">📝</span>
                   {board.postsCount} posts
-                </span>
-                <span>
-                  {board.activeUsers} active users
-                </span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-1">👥</span>
+                  {board.activeUsers} active
+                </div>
               </div>
-            </div>
-            
-            <div className="absolute -bottom-3 right-6 transform rotate-3">
-              <button className="arcade-button text-xs px-4 py-2">
-                Enter Board
-              </button>
             </div>
           </div>
         </Link>

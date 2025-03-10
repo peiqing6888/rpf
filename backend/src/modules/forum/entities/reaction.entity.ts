@@ -7,32 +7,30 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Post } from './post.entity';
 
 @Entity('reactions')
 @Unique(['userId', 'postId', 'type'])
 export class Reaction {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
-  @ManyToOne(() => User, (user) => user.reactions)
+  @ManyToOne('User', 'reactions')
   @JoinColumn({ name: 'userId' })
-  user: User;
+  user!: any;
 
   @Column()
-  userId: string;
+  userId!: string;
 
-  @ManyToOne(() => Post, (post) => post.reactions)
+  @ManyToOne('Post', 'reactions')
   @JoinColumn({ name: 'postId' })
-  post: Post;
+  post!: any;
 
   @Column()
-  postId: string;
+  postId!: string;
 
   @Column()
-  type: string;
+  type!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 } 

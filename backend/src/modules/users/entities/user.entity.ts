@@ -6,60 +6,58 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Post } from '../../forum/entities/post.entity';
-import { Reaction } from '../../forum/entities/reaction.entity';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column()
-  username: string;
+  username!: string;
 
   @Column({ select: false })
-  password: string;
+  password!: string;
 
   @Column({ nullable: true })
-  avatar: string;
+  avatar!: string;
 
   @Column({ default: 'New Member' })
-  nameplate: string;
+  nameplate!: string;
 
   @Column({ type: 'jsonb', default: {} })
-  preferences: {
+  preferences!: {
     theme?: string;
     notifications?: boolean;
     language?: string;
   };
 
-  @OneToMany(() => Post, (post) => post.author)
-  posts: Post[];
+  @OneToMany('Post', 'author')
+  posts!: any[];
 
-  @OneToMany(() => Reaction, (reaction) => reaction.user)
-  reactions: Reaction[];
-
-  @Column({ default: 0 })
-  postCount: number;
+  @OneToMany('Reaction', 'user')
+  reactions!: any[];
 
   @Column({ default: 0 })
-  reactionCount: number;
+  postCount!: number;
+
+  @Column({ default: 0 })
+  reactionCount!: number;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ default: false })
-  isVerified: boolean;
+  isVerified!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Column({ nullable: true })
-  lastLoginAt: Date;
+  lastLoginAt!: Date;
 } 

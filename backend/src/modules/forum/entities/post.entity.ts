@@ -8,68 +8,65 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Board } from './board.entity';
-import { Reaction } from './reaction.entity';
 
 @Entity('posts')
 export class Post {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column('text')
-  content: string;
+  content!: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne('User', 'posts')
   @JoinColumn({ name: 'authorId' })
-  author: User;
+  author!: any;
 
   @Column()
-  authorId: string;
+  authorId!: string;
 
-  @ManyToOne(() => Board, (board) => board.posts)
+  @ManyToOne('Board', 'posts')
   @JoinColumn({ name: 'boardId' })
-  board: Board;
+  board!: any;
 
   @Column()
-  boardId: string;
+  boardId!: string;
 
-  @OneToMany(() => Post, (post) => post.parent)
-  replies: Post[];
+  @OneToMany('Post', 'parent')
+  replies!: Post[];
 
-  @ManyToOne(() => Post, (post) => post.replies, { nullable: true })
+  @ManyToOne('Post', 'replies', { nullable: true })
   @JoinColumn({ name: 'parentId' })
-  parent: Post;
+  parent!: Post;
 
   @Column({ nullable: true })
-  parentId: string;
+  parentId!: string;
 
-  @OneToMany(() => Reaction, (reaction) => reaction.post)
-  reactions: Reaction[];
+  @OneToMany('Reaction', 'post')
+  reactions!: any[];
 
   @Column({ type: 'jsonb', default: {} })
-  reactionCounts: {
+  reactionCounts!: {
     [key: string]: number;
   };
 
   @Column({ default: 0 })
-  replyCount: number;
+  replyCount!: number;
 
   @Column({ default: false })
-  isPinned: boolean;
+  isPinned!: boolean;
 
   @Column({ default: false })
-  isLocked: boolean;
+  isLocked!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Column({ nullable: true })
-  lastReplyAt: Date;
+  lastReplyAt!: Date;
 } 
