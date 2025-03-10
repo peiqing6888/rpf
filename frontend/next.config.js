@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'your-supabase-project.supabase.co'],
+    domains: ['tubhvijfljrpvxrbixsm.supabase.co'],
     unoptimized: process.env.NODE_ENV === 'development',
   },
   webpack: (config) => {
